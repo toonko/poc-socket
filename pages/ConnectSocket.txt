@@ -1,0 +1,14 @@
+Connect Socket
+wss://fah.conicle.com/ws/chat/<live_id>
+
+GET All Chat History Message
+[GET] https://fah.conicle.com/api/chat/message/?target=<live_id>
+
+Send Message
+[POST] https://fah.conicle.com/api/chat/message (body: {"account": <account_id>, "live_id": "<live_id>", "body":"<message>"})
+
+
+Account
+1. id: 9 / username: test1 / pass: 1234
+2. id: 10 / username: test2 / pass: 1234
+3. id: 11 / username: test3 / pass: 1234
