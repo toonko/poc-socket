@@ -61,20 +61,23 @@ export default {
     },
     async openUserMedia (e) {
       console.log('openUserMedia', navigator)
-      // if ( !navigator.mediaDevice || !navigator.mediaDevice.getUserMedia ) return
-      const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true})
-      console.log('stream', stream)
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true})
+        console.log('stream', stream)
 
-      document.querySelector('#localVideo').srcObject = stream
-      this.localStream = stream
+        document.querySelector('#localVideo').srcObject = stream
+        this.localStream = stream
 
-      console.log('Stream:', document.querySelector('#localVideo').srcObject)
-      document.querySelector('#screenBtn').disabled = true
-      document.querySelector('#cameraBtn').disabled = true
-      document.querySelector('#createBtn').disabled = false
-      document.querySelector('#hangupBtn').disabled = false
+        console.log('Stream:', document.querySelector('#localVideo').srcObject)
+        document.querySelector('#screenBtn').disabled = true
+        document.querySelector('#cameraBtn').disabled = true
+        document.querySelector('#createBtn').disabled = false
+        document.querySelector('#hangupBtn').disabled = false
 
-      if (this.peerConnection) this.getTrackLocal()
+        if (this.peerConnection) this.getTrackLocal()
+      } catch (error) {
+        console.log('error', error)
+      }
     },
     startRecord () {
       console.log('start record')

@@ -19,25 +19,24 @@
             div.small (acc id: [9, 10])
           button#connectSocketBtn(@click='connectSocket') Connect Socket
           
-    .d-md-flex.live 
-      .live__video.flex-fill.mb-5
+    .d-flex.live 
+      .live__video.flex-fill
         video#remoteVideo.w-100(playsinline autoplay controls) 
         video#localVideo.live__video-local(muted playsinline autoplay style="width:250px;") 
 
-       
+        button(@click="addMessage") add Message
+        button(@click="loadMessage") load Message
 
       .live__message.align-self-stretch.ml-3(style='min-width: 400px;')
         .d-flex.flex-column.h-100
           #messageDisplay.live__message-display.flex-fill.p-3
             .box(v-for="msg, index in messages" :key="index" :class="(msg.side == 'left') ? 'left' : 'right'")
-              span(v-if="(messages[index - 1] && messages[index - 1].account !== msg.account) || index == 0") {{msg.account}}
+              span(v-if="(messages[index - 1] && messages[index - 1].name !== msg.name) || index == 0") {{msg.name}}
               .bubble(v-html="msg.text")
 
           .d-flex.live__message-input.p-3
             input.form-control(v-model='inputMessage' placeholder="type message")
             button.ml-1(@click="sendMessage(inputMessage)") send
-
-    .text-right.mt-2: button(@click="loadMessage") load Message
 
 </template>
 

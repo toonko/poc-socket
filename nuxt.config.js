@@ -1,4 +1,10 @@
 
+let axios = {
+  proxy: true /* process.env.NODE_ENV !== 'production', */,
+}
+let target = 'https://fah.conicle.com'
+let proxy = { '/api': { target, ws: true } }
+
 export default {
   /*
   ** Nuxt rendering mode
@@ -53,11 +59,14 @@ export default {
   modules: [
     // Doc: https://bootstrap-vue.js.org
     'bootstrap-vue/nuxt',
+    '@nuxtjs/axios'
   ],
   /*
   ** Build configuration
   ** See https://nuxtjs.org/api/configuration-build/
   */
   build: {
-  }
+  },
+  axios,
+  proxy,
 }

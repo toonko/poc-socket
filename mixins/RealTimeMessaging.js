@@ -1,22 +1,16 @@
-import io from 'socket.io-client'
-import $ from 'jquery'
+import $, { map } from 'jquery'
 
 export default {
   data () {
     return {
-      connection: null,
       webSocket: null,
-      webSocket2: null,
-      socket: null,
       socketWsPath: 'wss://fah.conicle.com/ws/chat',
-      socketWsPath2: 'wss://fah.conicle.com',
-      socketHttpPath: 'https://fah.conicle.com/ws/chat',
-      serverPath: 'https://fah.conicle.com/api/chat/message',
       inputMessage: null,
-      accountId: null,
+      accountId: this.$route.query.account,
       liveId: 1,
 
-      messages: [
+      messages: [],
+      messagesBackup: [
         {name: 'Sender2', text: 'Dessert!!!!', side: 'left'},
         {name: 'Sender3', text: 'Carrot cake &#129409', side: 'left'},
         {name: 'Sender1', text: '&#9748; Jelly beans &#9748;', side: 'right'},
@@ -45,39 +39,15 @@ export default {
   },
   methods: {
     connectSocket () {
-      console.log("Starting connection to WebSocket Server")
-      // this.webSocket2 = new WebSocket('wss://echo.websocket.org')
-      this.webSocket2 = new WebSocket('wss://javascript.info/article/websocket/demo/hello')
-      console.log('webSocket2', this.webSocket2)
+      const csrfToken = this.getCookie('csrftoken', document.cookie)
+      console.log('Starting connection to WebSocket Server', csrfToken)
 
-      // this.connection = io(`${this.socketWsPath}/${this.liveId}/`)
-      // this.connection = io(`${this.socketWsPath2}`, {transports: ['websocket'], path: `/ws/chat/${this.liveId}/`})
-      // console.log('connection', this.connection.id, this.connection)
-      // this.connection.open()
+      this.webSocket = new WebSocket(`wss://fah.conicle.com/ws/chat/${this.liveId}/`)
+      this.webSocket.onopen = (event) => console.log('[Fah\'s Socket: onopen]', event)
+      this.webSocket.onerror = (error) => console.log('[Fah\'s Socket: error]', error)
+      this.webSocket.onmessage = (event) => { console.log('onmessage', event) }
 
-      this.webSocket = new WebSocket(`${this.socketWsPath}/${this.liveId}/`)
-      console.log('webSocket', this.webSocket)
-
-      // this.connection.on('connect', () => console.log('connect', this.connection))
-      // this.connection.on('event', () => console.log('event', this.connection))
-      // this.connection.on('error', (error) => console.log('error', this.connection, error))
-      // this.connection.on('connect_error', (error) => console.log('connect_error', this.connection, error))
-      // this.connection.on('connect_failed', (error) => console.log('connect_failed', this.connection, error))
-
-      // this.connection.onmessage = function(event) {
-      //   console.log('onmessage', event)
-      // }
-
-      this.webSocket.onopen = (event) => console.log('[webSocket: onopen]', event)
-      this.webSocket2.onopen = (event) => console.log('[webSocket2: onopen]', event)
-
-      this.webSocket.onerror = (error) => console.log('[webSocket: error]', error)
-      this.webSocket2.onerror = (error) => console.log('[webSocket2: error]', error)
-    
-      // this.socket = io(`${this.socketPath}${this.liveId}`)
-      // console.log('socket', this.socket)
-
-      // this.connection.onclose = function(event) {
+      // this.webSocket.onclose = function(event) {
       //   if (event.wasClean) {
       //     alert(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
       //   } else {
@@ -86,7 +56,6 @@ export default {
       //     alert('[close] Connection died');
       //   }
       // };
-
     },
 
     getRandomNum (min = 0, max) {
@@ -102,19 +71,56 @@ export default {
     },
     loadMessage () {
       console.log('loadMessage')
-      for (let index = 0; index < this.getRandomNum(4, 20); index++) {
-        this.addMessage()
-      }
-    },
-    sendMessage (text) {
-      console.log('sendMessage')
-      if (!text) return
-      this.messages.push({
-        name: 'Sender1', 
-        text: text, 
-        side: 'right'
+      this.$axios({
+        method: 'get',
+        url: `/api/chat/message/?target=${this.liveId}`,
+        headers: {'X-CSRFTOKEN': this.getCookie('csrftoken', document.cookie)}
+      }).then(res => {
+        console.log('res', res.data.results)
+        const newList = [ ...this.messages ]
+        map(res.data.results, message => {
+          if (this.messages.findIndex((item) => item.id == message.id ) >= 0) return
+          this.messages.push({
+            id: message.id,
+            account: message.account, 
+            text: message.body, 
+            side: (message.account != this.accountId) ? 'left' : 'right'
+          }) 
+        })
       })
-
+    },
+    getCookie (name, src) {
+      let cookieValue = null
+      if (src !== '') {
+        let cookies = src.split(';')
+        for (var i = 0; i < cookies.length; i++) {
+          var cookie = cookies[i].trim()
+          // Does this cookie string begin with the name we want?
+          if (cookie.substring(0, name.length + 1) === name + '=') {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1))
+            break
+          }
+        }
+      }
+      return cookieValue
+    },
+  
+    sendMessage (text) {
+      if (!text) return
+      this.$axios({
+        method: 'post',
+        url: `/api/chat/message/?target=${this.liveId}`,
+        data: { account: this.accountId || this.$route.query.account, live_id: this.liveId, body: text },
+        headers: {'X-CSRFTOKEN': this.getCookie('csrftoken', document.cookie)}
+      }).then(res => {
+        console.log('res', res.data)
+        this.messages.push({
+          id : res.data.id,
+          account: res.data.account, 
+          text: text, 
+          side: 'right'
+        }) 
+      })
       this.inputMessage = ''
     }
   }
