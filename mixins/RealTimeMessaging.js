@@ -42,10 +42,16 @@ export default {
       const csrfToken = this.getCookie('csrftoken', document.cookie)
       console.log('Starting connection to WebSocket Server', csrfToken)
 
+      document.cookie = `X-Authorization=${csrfToken}; path=/`
+      document.cookie = `X-CSRFTOKEN=${csrfToken}; path=/`
+      sessionStorage.setItem("headers", csrfToken);
+      
+
+      // this.webSocket = new WebSocket(`wss://fah.conicle.com/ws/chat/${this.liveId}/`, `Sec-WebSocket-Key:${csrfToken}`)
       this.webSocket = new WebSocket(`wss://fah.conicle.com/ws/chat/${this.liveId}/`)
       this.webSocket.onopen = (event) => console.log('[Fah\'s Socket: onopen]', event)
       this.webSocket.onerror = (error) => console.log('[Fah\'s Socket: error]', error)
-      this.webSocket.onmessage = (event) => { console.log('onmessage', event) }
+      this.webSocket.onmessage = (event) => { console.log('connectSocket: onmessage', event.data) }
 
       // this.webSocket.onclose = function(event) {
       //   if (event.wasClean) {
@@ -56,6 +62,13 @@ export default {
       //     alert('[close] Connection died');
       //   }
       // };
+    },
+
+    setCookie (cname, cvalue, exdays) {
+      var d = new Date();
+      d.setTime(d.getTime() + (exdays*24*60*60*1000));
+      var expires = "expires="+ d.toUTCString();
+      document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
     },
 
     getRandomNum (min = 0, max) {

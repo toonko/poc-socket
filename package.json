@@ -8,6 +8,12 @@
     "start": "nuxt start",
     "generate": "nuxt generate"
   },
+  "config": {
+    "nuxt": {
+      "host": "127.0.0.1",
+      "port": "3000"
+    }
+  },
   "dependencies": {
     "@nuxtjs/axios": "^5.12.1",
     "axios": "^0.20.0",
@@ -17,7 +23,8 @@
     "jquery": "^3.5.1",
     "nuxt": "^2.14.0",
     "socket.io": "^2.3.0",
-    "socket.io-client": "^2.3.0"
+    "socket.io-client": "^2.3.0",
+    "vue-native-websocket": "^2.0.14"
   },
   "devDependencies": {
     "node-sass": "^4.14.1",

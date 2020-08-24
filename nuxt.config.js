@@ -1,9 +1,10 @@
 
-let axios = {
-  proxy: true /* process.env.NODE_ENV !== 'production', */,
-}
 let target = 'https://fah.conicle.com'
-let proxy = { '/api': { target, ws: true } }
+let axios = {
+  // proxy: true /* process.env.NODE_ENV !== 'production', */,
+  baseURL: target
+}
+// let proxy = { '/api': { target, ws: true }, '/ws': { target: 'wss://fah.conicle.com', ws: true} }
 
 export default {
   /*
@@ -68,5 +69,5 @@ export default {
   build: {
   },
   axios,
-  proxy,
+  // proxy,
 }
