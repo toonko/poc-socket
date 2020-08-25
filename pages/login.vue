@@ -9,6 +9,7 @@
 
 <script>
 import io from 'socket.io-client'
+var cookie = require('cookie')
 
 export default {
   data () {
@@ -22,71 +23,42 @@ export default {
     }
   },
   methods: {
-    connectWebSocket (link) {
-      const csrfToken = this.getCookie('csrftoken', document.cookie)
-      this.webSocket = new WebSocket(`${link}/ws/chat/1/`)
-      console.log('this.webSocket', this.webSocket)
-      this.webSocket.onopen = (event) => console.log('[Fah\'s Socket: onopen]', event)
-      this.webSocket.onerror = (error) => console.log('[Fah\'s Socket: error]', error)
-      this.webSocket.onmessage = (event) => { console.log('[Fah\'s Socket: onmessage]', event.data) }
-    },
     async login (index) {
-      this.submitLogin(index)
-      // await this.connectWebSocket('wss://fah.conicle.com')
-      // await this.connectWebSocket('wss://192.168.50.51:8000')
-    },
-    async submitLogin (index) {
-      let res = await this.$axios({
-        method: 'post',
-        url: '/api/account/login/',
-        data: {
-          username: this.accounts[index].username,
-          password: this.accounts[index].password
+        let res = await this.$axios({
+          method: 'post',
+          url: '/api/account/login/',
+          data: {
+            username: this.accounts[index].username,
+            password: this.accounts[index].password
+          }
+        })
+
+        console.log('res', res)
+        const csrfToken = this.getCookie('csrftoken', document.cookie)
+
+        // document.cookie = `X-CSRFTOKEN=${csrfToken}; path=/`
+        console.log('document.cookie', document.cookie)
+
+        var setCookie = cookie.serialize('csrfToken', csrfToken)
+        // foo=bar
+
+
+        // const link = 'ws://localhost:3000'
+        const link = 'wss://fah.conicle.com'
+
+        this.webSocket = new WebSocket(`${link}/ws/chat/1313/`)
+        console.log('this.webSocket', this.webSocket)
+        
+        this.webSocket.onopen = async (event) => {
+          console.log('[Fah\'s Socket: onopen]', event)
+          this.webSocket.send(JSON.stringify({ message: 'hello' }))
         }
-      })
-      console.log('res', res)
-      const csrfToken = this.getCookie('csrftoken', document.cookie)
+        this.webSocket.onerror = (error) => console.log('[Fah\'s Socket: error]', error)
+        this.webSocket.onmessage = (event) => { 
+          console.log('[Fah\'s Socket: onmessage]', event.data) 
+          // console.log('event', event) 
+        }
       
-
-      // document.cookie = `X-Authorization=${csrfToken}; path=/`
-      document.cookie = `X-CSRFTOKEN=${csrfToken}; path=/`
-      console.log('document.cookie', document.cookie)
-      // sessionStorage.setItem("headers", csrfToken);
-
-      // this.connectWebSocket('wss://192.168.50.51:8002')
-      // const link = 'ws://192.168.50.51:8002'
-
-      const link = 'wss://fah.conicle.com'
-
-      this.webSocket = new WebSocket(`${link}/ws/chat/1313/`, [],  { 'headers': { 'Cookie': document.cookie }})
-      // console.log('this.webSocket', this.webSocket)
-      
-      this.webSocket.onopen = async (event) => {
-        console.log('[Fah\'s Socket: onopen]', event)
-        const { target: webSocket } = event
-        webSocket.send(JSON.stringify({ message: 'hello' }))
-        this.webSocket.send(JSON.stringify({ message: 'hello' }))
-      }
-      this.webSocket.onerror = (error) => console.log('[Fah\'s Socket: error]', error)
-      this.webSocket.onmessage = (event) => { console.log('[Fah\'s Socket: onmessage]', event.data, event) }
-
-      // middleware
-      // io.use((socket, next) => {
-      //   let clientId = socket.handshake.headers['x-clientid'];
-      //   if (isValid(clientId)) {
-      //     return next();
-      //   }
-      //   return next(new Error('authentication error'));
-      // });
-
-      // const socket = io(link, { path: '/ws/chat/1/', transports: ['websocket'] })
-
-      
-      // console.log('socket', socket)
-      // socket.on('connect', (event) => console.log('connect', event));
-      // socket.on('disconnect', (event) => console.log('disconnect', event));
-
-
       // this.$router.push(`/?account=${res.data.id}`)
     },
     getCookie (name, src) {
